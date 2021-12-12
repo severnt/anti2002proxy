@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -35,7 +36,7 @@ func main() {
 	var serverAddr = *serverAddrStr
 
 	if net.ParseIP(serverAddr) == nil {
-		serverAddr = servers[serverAddr]
+		serverAddr = servers[strings.ToLower(serverAddr)]
 	}
 
 	if serverAddr == "" {
@@ -46,6 +47,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	log.Printf("Ready. Listening on: %s. Connecting to: %s\n", ln.Addr().String(), serverAddr)
 
 	n := 0
 	for {
@@ -124,7 +127,9 @@ func handleConnection(local net.Conn, serverAddr string, n int) {
 	}
 
 	if tries > 1 {
-		log.Printf("[%d] %s (%d 2002s prevented)\n", n, "ok, starting passthrough", tries-1)
+		log.Printf("[%d] %s (prevented 2002!)\n", n, "ok, starting passthrough")
+	} else {
+		log.Printf("[%d] %s\n", n, "ok, starting passthrough")
 	}
 
 	dead := make(chan bool, 2)
